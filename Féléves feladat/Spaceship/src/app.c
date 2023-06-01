@@ -135,6 +135,8 @@ void handle_app_events(App* app)
                 if (temp.y + 0.05f <= 2000.0f && temp.y + 0.05 >= -2000.0f) {
                     if(app->scene.speed <= 1.0){
                         app->scene.speed += 0.05;
+                        printf("x: %f y: %f z: %f\n", app->scene.obj_position.x, app->scene.obj_position.y, app->scene.obj_position.z);
+                        printf("Distance: %f\n", app->scene.distance[0]);
                     }
                 }
                 break;

@@ -23,7 +23,10 @@ typedef struct Scene
     float brightness;
     GLuint instructions_texture;
     int is_instructions_on;
+    float asteroid_rotation;
     float speed;
+    int is_touching_asteroid;
+    float distance[12];
 } Scene;
 
 /**
@@ -65,5 +68,7 @@ vec3 get_position(Scene* scene);
 void show_instructions(Scene* scene);
 
 void reset_spaceship(Scene* scene);
+
+void collision(Scene* scene);
 
 #endif /* SCENE_H */

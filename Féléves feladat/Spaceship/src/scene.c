@@ -82,6 +82,8 @@ void init_scene(Scene* scene)
 
     scene->is_instructions_on = 0;
 
+    scene->is_touching_asteroid = 0;
+
     //Skybox textúrák
     scene->texture_ids[0] = load_texture("assets/textures/bkg1_back.png");
     scene->texture_ids[1] = load_texture("assets/textures/bkg1_bot.png");
@@ -98,11 +100,11 @@ void init_scene(Scene* scene)
     scene->material.diffuse.green = 0.5;
     scene->material.diffuse.blue = 0.5;
 
-    scene->material.specular.red = 0.5;
-    scene->material.specular.green = 0.5;
-    scene->material.specular.blue = 0.5;
+    scene->material.specular.red = 1.0;
+    scene->material.specular.green = 1.0;
+    scene->material.specular.blue = 1.0;
 
-    scene->material.shininess = 0.0;
+    scene->material.shininess = 100.0;
 }
 
 void set_lighting(float brightness)
@@ -164,14 +166,25 @@ void update_scene(Scene* scene)
         scene->movement_speed = 0.5f;
         return;
     }
+
+    scene->asteroid_rotation += 0.5;
 }
 
 void render_scene(Scene* scene)
 {
     move_object(scene);
 
-    //Skybox --
+    collision(scene);
 
+    if(scene->is_touching_asteroid)
+    {
+        printf("Game over!");
+        exit(0);
+    }
+
+    //Skybox --
+    glDisable(GL_LIGHT0);
+    glEnable(GL_COLOR_MATERIAL);
     //Bottom oldal
     glPushMatrix();
     glEnable(GL_TEXTURE_2D);
@@ -228,7 +241,8 @@ void render_scene(Scene* scene)
     draw_skybox_front();
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
-
+    glEnable(GL_LIGHT0);
+    glDisable(GL_COLOR_MATERIAL);
     //Skybox--
 
     set_material(&(scene->material));
@@ -240,6 +254,7 @@ void render_scene(Scene* scene)
         glEnable(GL_TEXTURE_2D);
         glScalef(0.01, 0.01, 0.01);
         glTranslatef(scene->asteroid_position[i].x, scene->asteroid_position[i].y, scene->asteroid_position[i].z);
+        glRotatef(scene->asteroid_rotation, 0, 0, 1);
         draw_model(&(scene->asteroid[i]));
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
@@ -251,6 +266,7 @@ void render_scene(Scene* scene)
         glEnable(GL_TEXTURE_2D);
         glScalef(0.02, 0.02, 0.02);
         glTranslatef(scene->asteroid_position[i].x, scene->asteroid_position[i].y, scene->asteroid_position[i].z);
+        glRotatef(-(scene->asteroid_rotation), 0, 0, 1);
         draw_model(&(scene->asteroid[i]));
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
@@ -262,6 +278,7 @@ void render_scene(Scene* scene)
         glEnable(GL_TEXTURE_2D);
         glScalef(0.04, 0.04, 0.04);
         glTranslatef(scene->asteroid_position[i].x, scene->asteroid_position[i].y, scene->asteroid_position[i].z);
+        glRotatef(scene->asteroid_rotation, 0, 0, 1);
         draw_model(&(scene->asteroid[i]));
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
@@ -287,7 +304,6 @@ void draw_skybox_bottom()
 {
 
     glEnable(GL_TEXTURE_2D);
-
     //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     glBegin(GL_QUADS);
@@ -428,6 +444,20 @@ void show_instructions(Scene* scene)
 
     glDisable(GL_COLOR_MATERIAL);
     glEnable(GL_DEPTH_TEST);
+}
+
+void collision(Scene* scene)
+{
+
+    for(int i = 0; i < 12; i++)
+    {
+        scene->distance[i] = sqrt(pow(scene->asteroid_position[i].x*0.1 - scene->obj_position.x, 2) + pow(scene->asteroid_position[i].y*0.1 - scene->obj_position.y, 2));
+        
+        if(scene->distance[i] <= 10)
+        {
+            scene->is_touching_asteroid = 1;
+        }
+    }
 }
 
 void reset_spaceship(Scene* scene)
